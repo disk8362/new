@@ -6,35 +6,28 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 public class UserDaoJDBCImpl implements UserDao {
-    Connection connection = Util.getConnection();
+    private static final Connection connection = Util.getConnection();
     public UserDaoJDBCImpl() {
     }
-    //----------------------------------------------------
     public void createUsersTable() throws SQLException {
-        Statement statement = connection.createStatement();
-        try {
+        try (Statement statement = connection.createStatement()) {
             String create = "CREATE TABLE Users (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20),lastName VARCHAR(20), age INT)";
             statement.executeUpdate(create);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    //----------------------------------------------
     public void dropUsersTable() throws SQLException {
-        Statement statement = connection.createStatement();
-        String drop = "DROP TABLE USERS";
-        try {
+        try (Statement statement = connection.createStatement()) {
+            String drop = "DROP TABLE USERS";
             statement.executeUpdate(drop);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    //-----------------------------------------------
     public void saveUser(String name, String lastName, byte age) throws SQLException {
-        PreparedStatement statement = null;
-        try {
-            String save = "INSERT INTO Users( name, lastName, age) Values (?,?,?) ";
-            statement = connection.prepareStatement(save);
+        String save = "INSERT INTO Users( name, lastName, age) Values (?,?,?) ";
+        try (PreparedStatement statement = connection.prepareStatement(save)) {
             statement.setString(1, name);
             statement.setString(2, lastName);
             statement.setByte(3, age);
@@ -45,10 +38,8 @@ public class UserDaoJDBCImpl implements UserDao {
         }
     }
     public void removeUserById(long id) throws SQLException {
-        PreparedStatement statement = null;
-        try {
-            String del = "DELETE FROM Users WHERE Id = ? ";
-            statement = connection.prepareStatement(del);
+        String del = "DELETE FROM Users WHERE Id = ? ";
+        try (PreparedStatement statement = connection.prepareStatement(del)) {
             statement.setByte(1, (byte) id);
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -57,10 +48,8 @@ public class UserDaoJDBCImpl implements UserDao {
     }
     public List<User> getAllUsers() throws SQLException {
         List<User> userList = new ArrayList<>();
-        Statement statement = null;
         String all = "SELECT id, name, lastName, age FROM Users";
-        try {
-            statement = connection.createStatement();
+        try (Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery(all);
             while (resultSet.next()) {
                 User user = new User();
@@ -77,9 +66,7 @@ public class UserDaoJDBCImpl implements UserDao {
         return userList;
     }
     public void cleanUsersTable() throws SQLException {
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
+        try (Statement statement = connection.createStatement()) {
             statement.executeUpdate("DELETE FROM Users");
         } catch (SQLException e) {
             e.printStackTrace();
